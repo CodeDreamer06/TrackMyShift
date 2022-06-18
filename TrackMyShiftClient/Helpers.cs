@@ -15,6 +15,8 @@ namespace TrackMyShiftClient
  * remove [id]: delete a log
 ";
 
+        public const string NoResultsMessage = @"There are no logs currently saved. Type 'help' to learn how to log a new shift.";
+
         private static readonly Dictionary<HeaderCharMapPositions, char> HeaderCharacterMap = new()
         {
             { HeaderCharMapPositions.TopLeft, '╒' },
@@ -29,6 +31,28 @@ namespace TrackMyShiftClient
             { HeaderCharMapPositions.BorderLeft, '│' },
             { HeaderCharMapPositions.Divider, '│' },
         };
+
+        internal static Shift GetShiftDetails()
+        {
+            var shift = new Shift();
+
+            foreach (var property in shift.GetType().GetProperties())
+            {
+                if (property.Name == "Id") continue;
+
+                if (property.Name == "Duration")
+                {
+                    shift.Duration = (decimal) (shift.End - shift.Start).TotalMinutes;
+                    continue;
+                }
+
+                Console.Write(property.Name + ": ");
+                var value = Convert.ChangeType(Console.ReadLine()!, property.PropertyType);
+                property.SetValue(shift, value);
+            }
+
+            return shift;
+        }
 
         public static void DisplayTable<T>(List<T> records, string emptyMessage) where T : class
         {
@@ -60,8 +84,6 @@ namespace TrackMyShiftClient
                         maxPercentage = matchPercentage;
                         correctDefinition = definition;
                     }
-
-                    ;
                 }
 
                 return maxPercentage > 40 ? $"Did you mean {correctDefinition}?" : "";
@@ -70,22 +92,6 @@ namespace TrackMyShiftClient
             catch
             {
                 return "";
-            }
-        }
-
-        public static (string?, string?) SplitString(string inputString,
-            string errorMessage = "Invalid format. Please check 'help' for more info.")
-        {
-            try
-            {
-                string[] outputString = inputString.Trim().Split(',');
-                return (outputString[0].Trim(), outputString[1].Trim());
-            }
-
-            catch
-            {
-                Console.WriteLine(errorMessage);
-                return (null, null);
             }
         }
 
@@ -103,6 +109,9 @@ namespace TrackMyShiftClient
 
     public static class Extensions
     {
-        public static string RemoveKeyword(this string str, string keyword) => str.Replace(keyword, "");
+        public static string RemoveKeyword(this string str, string keyword) => str.Replace(keyword + " ", "");
+
+        public static int GetNumber(this string str, string keyword) => 
+            (int)Helpers.IsNumber(str.Replace(keyword + " ", "")).Item2;
     }
 }

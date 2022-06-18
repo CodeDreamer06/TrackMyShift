@@ -16,26 +16,13 @@ internal class UserInput
 
             else if (string.IsNullOrWhiteSpace(command)) continue;
 
-            else if (command.StartsWith("show"))
-                api.Get((int)Helpers.IsNumber(command.RemoveKeyword("show ")).Item2);
+            else if (command.StartsWith("show")) api.Get(command.GetNumber("show"));
 
-            else if (command.StartsWith("add"))
-            {
-                var shift = new Shift();
+            else if (command == "add") api.Post(Helpers.GetShiftDetails());
 
-                foreach (var property in shift.GetType().GetProperties())
-                {
-                    Console.Write(property.Name + ": ");
-                    var value = Convert.ChangeType(Console.ReadLine()!, property.GetType());
-                    property.SetValue(shift, value);
-                }
+            else if (command.StartsWith("update ")) api.Put(Helpers.GetShiftDetails());
 
-                api.Post(shift);
-            }
-
-            else if (command.StartsWith("update")) api.Put();
-
-            else if (command.StartsWith("remove")) api.Delete();
+            else if (command.StartsWith("remove ")) api.Delete(command.GetNumber("remove"));
 
             else
             {

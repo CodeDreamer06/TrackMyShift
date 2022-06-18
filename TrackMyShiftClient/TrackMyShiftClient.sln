@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackMyShiftClient", "TrackMyShiftClient.csproj", "{6CEACBC5-4A97-4278-8D6A-6D482CD21348}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackMyShiftClient", "TrackMyShiftClient.csproj", "{6CEACBC5-4A97-4278-8D6A-6D482CD21348}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB8C1A46-0300-43A5-BFFB-6A4EF8836025}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
