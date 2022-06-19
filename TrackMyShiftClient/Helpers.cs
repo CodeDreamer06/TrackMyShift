@@ -11,7 +11,7 @@ namespace TrackMyShiftClient
  * exit or 0: stop the program
  * show [optional: id]: display all your shifts
  * add: log a new shift
- * update [id], [new payment or location]: edit an existing contact
+ * update [id]: edit an existing log
  * remove [id]: delete a log
 ";
 
@@ -32,26 +32,38 @@ namespace TrackMyShiftClient
             { HeaderCharMapPositions.Divider, '│' },
         };
 
-        internal static Shift GetShiftDetails()
+        internal static Shift GetShiftDetails(int? id = null, bool existingShift = false)
         {
             var shift = new Shift();
 
+            if (existingShift) Console.WriteLine("Press enter if you don't want to change the value.");
+
             foreach (var property in shift.GetType().GetProperties())
             {
-                if (property.Name == "Id") continue;
+                if (property.Name == "Id")
+                {
+                    if (id.HasValue) shift.Id = id.Value;
+                    continue;
+                }
 
                 if (property.Name == "Duration")
                 {
-                    shift.Duration = (decimal) (shift.End - shift.Start).TotalMinutes;
+                    if (shift.End is not null || shift.Start is not null)
+                        shift.Duration = (decimal) (shift.End - shift.Start)?.TotalMinutes!;
                     continue;
                 }
 
                 Console.Write(property.Name + ": ");
-                var value = Convert.ChangeType(Console.ReadLine()!, property.PropertyType);
+                var userInput = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(userInput)) continue;
+
+                var value = Convert.ChangeType(userInput, Nullable.GetUnderlyingType(property.PropertyType)!);
+
                 property.SetValue(shift, value);
             }
 
-            return shift;
+            return new ShiftsService().ReplaceEmptyFields(shift);
         }
 
         public static void DisplayTable<T>(List<T> records, string emptyMessage) where T : class

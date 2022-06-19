@@ -5,10 +5,25 @@ namespace TrackMyShiftClient;
 
 internal class ShiftsService
 {
-    private RestClient _client = new("https://localhost:5001/api/Shifts/");
+    private RestClient _client = new("https://localhost:7176/api/Shifts/");
 
     public ShiftsService()
     {
+    }
+
+    internal Shift ReplaceEmptyFields(Shift shift)
+    {
+        var request = new RestRequest(shift.Id != 0 ? shift.Id.ToString() : null);
+        var oldLog = JsonSerializer.Deserialize<Shift>(_client.Execute(request).Content);
+
+        foreach (var property in from property in shift.GetType().GetProperties()
+                                 where property.GetValue(shift) is null
+                                 select property)
+        {
+            property.SetValue(shift, property.GetValue(oldLog));
+        }
+
+        return shift;
     }
 
     internal void Get(int id)

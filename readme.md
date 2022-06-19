@@ -15,7 +15,7 @@ A simple API and a client to track your work shifts!
  * **exit or 0**: stop the program
  * **show [optional: id]**: display all your shifts
  * **add**: log a new shift
- * **update [id], [new payment or location]**: edit an existing contact
+ * **update [id]**: edit an existing log
  * **remove [id]**: delete a log
 
  *Don't forget to change the connection string in appsettings.json!*

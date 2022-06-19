@@ -34,8 +34,7 @@ public class ShiftsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, Shift shift)
     {
-        if (id != shift.Id) return BadRequest();
-
+        shift.Id = id;
         _context.Entry(shift).State = EntityState.Modified;
 
         try
