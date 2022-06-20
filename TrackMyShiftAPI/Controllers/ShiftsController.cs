@@ -49,7 +49,7 @@ public class ShiftsController : ControllerBase
         }
 
         return NoContent();
-    }
+    }    
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(int id)

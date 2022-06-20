@@ -30,19 +30,22 @@ namespace TrackMyShiftClient
             { HeaderCharMapPositions.BorderBottom, '═' },
             { HeaderCharMapPositions.BorderLeft, '│' },
             { HeaderCharMapPositions.Divider, '│' },
-        };
+        };       
 
         internal static Shift GetShiftDetails(int? id = null, bool existingShift = false)
         {
             var shift = new Shift();
+            var api = new ShiftsService();
+            var errorLog = new Shift() { Id = -1 };
 
-            if (existingShift) Console.WriteLine("Press enter if you don't want to change the value.");
+            if (existingShift) Console.WriteLine("Leave the field empty if you don't want to change the value.");
 
             foreach (var property in shift.GetType().GetProperties())
             {
                 if (property.Name == "Id")
                 {
-                    if (id.HasValue) shift.Id = id.Value;
+                    if (id.HasValue) shift.Id = api.GetAbsoluteId(id.Value);
+                    if (shift.Id == -1) return errorLog;
                     continue;
                 }
 
@@ -50,6 +53,12 @@ namespace TrackMyShiftClient
                 {
                     if (shift.End is not null || shift.Start is not null)
                         shift.Duration = (decimal) (shift.End - shift.Start)?.TotalMinutes!;
+
+                    if (shift.Start > shift.End)
+                    {
+                        Console.WriteLine("You cannot start a shift after it ends.");
+                        return errorLog;
+                    }
                     continue;
                 }
 
@@ -58,12 +67,30 @@ namespace TrackMyShiftClient
 
                 if (string.IsNullOrWhiteSpace(userInput)) continue;
 
-                var value = Convert.ChangeType(userInput, Nullable.GetUnderlyingType(property.PropertyType)!);
+                try
+                {
+                    var propertyType = Nullable.GetUnderlyingType(property.PropertyType)!;                    
+                    var value = (property.PropertyType == typeof(string)) ? 
+                        userInput : Convert.ChangeType(userInput, propertyType);
+                    property.SetValue(shift, value);
+                }
 
-                property.SetValue(shift, value);
+                catch (FormatException)
+                {
+                    Console.WriteLine("The value you entered is invalid for " + property.Name);
+                    Console.WriteLine(property.Name switch
+                    {
+                        "Payment" => "Payment must an integer. Example: 15.60",
+                        "Start" or "End" => @"The recommended forms for dateTime are 'MM/DD/YYYY HH/MM/SS' and 'WeekDay, day monthName year HH:MM:SS'.
+Examples: 08/18/2022 07:22:16 or Sat, 18 Aug 2022 07:22:16",
+                        _ => string.Empty
+                    });
+
+                    return errorLog;
+                }
             }
 
-            return new ShiftsService().ReplaceEmptyFields(shift);
+            return existingShift ? api.ReplaceEmptyFields(shift) : shift;
         }
 
         public static void DisplayTable<T>(List<T> records, string emptyMessage) where T : class
